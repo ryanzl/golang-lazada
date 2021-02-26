@@ -63,6 +63,18 @@ type OrderDetail struct {
 	TaxCode                    string                     `json:"tax_code,omitempty"`
 }
 
+// GetOrdersRequest
+type GetOrdersRequest struct {
+	CreatedBefore        string   `json:"created_before,omitempty"`
+	CreatedAfter         string   `json:"created_after,omitempty"`
+	Status               string   `json:"status,omitempty"`
+	UpdateBefore         string   `json:"update_before,omitempty"`
+	SortDirection        string   `json:"sort_direction,omitempty"`
+	Offset               string   `json:"offset,omitempty"`
+	Limit                string   `json:"limit,omitempty"`
+	UpdateAfter          string   `json:"update_after,omitempty"`
+	SortBy               string   `json:"sort_by,omitempty"`
+}
 // GetOrdersResponse api response
 type GetOrdersResponse struct {
 	Count  int           `json:"count"`

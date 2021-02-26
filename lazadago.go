@@ -305,7 +305,7 @@ type Client interface {
 	//=======================================================
 
 	// GetProducts Use this call to get information of shop
-	GetOrders() (*GetOrdersResponse, error)
+	GetOrders(req *GetOrdersRequest) (*GetOrdersResponse, error)
 	GetOrderItems() (*GetOrderItemsResponse, error)
 	SetStatusToReadyToShip(*SetStatusToReadyToShipRequest) (*GetShopInfoResponse, error)
 }
@@ -354,13 +354,16 @@ func (lc *LazadaClient) GetProducts() (resp *GetProductsResponse, err error) {
 //=======================================================
 
 // GetOrders get
-func (lc *LazadaClient) GetOrders() (resp *GetOrdersResponse, err error) {
-	b, err := lc.Execute("GetOrders", "GET", nil)
+func (lc *LazadaClient) GetOrders(req *GetOrdersRequest) (resp *GetOrdersResponse, err error) {
+	b, _ := json.Marshal(req)
+	params := make(map[string]string)
+	json.Unmarshal(b, &params)
+	bytes, err := lc.Execute("GetOrders", "GET", params)
 
 	if err != nil {
 		return
 	}
-	err = json.Unmarshal(b.Data, &resp)
+	err = json.Unmarshal(bytes.Data, &resp)
 
 	if err != nil {
 		return
