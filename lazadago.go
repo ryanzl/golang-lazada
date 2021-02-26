@@ -11,12 +11,11 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/url"
+	neturl "net/url"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
-	neturl "net/url"
-
 )
 
 const (
@@ -248,7 +247,7 @@ func (lc *LazadaClient) Execute(apiName string, apiMethod string, bodyParams int
 	apiServerURL := lc.getServerURL()
 
 	values.Add("sign", lc.sign(apiPath))
-	fullURL := fmt.Sprintf("%s/%s?%s", apiServerURL, apiPath, values.Encode())
+	fullURL := fmt.Sprintf("%s%s?%s", apiServerURL, apiPath, values.Encode())
 	req, err = http.NewRequest(apiMethod, fullURL, body)
 
 	if err != nil {
@@ -278,6 +277,7 @@ func (lc *LazadaClient) Execute(apiName string, apiMethod string, bodyParams int
 
 // Client interface api
 type Client interface {
+	AddAPIParam(key string, val string) *LazadaClient
 	MakeAuthURL() string
 
 	SetCallbackUrl(url string)
@@ -305,7 +305,7 @@ type Client interface {
 	//=======================================================
 
 	// GetProducts Use this call to get information of shop
-	GetOrders(req *GetOrdersRequest) (*GetOrdersResponse, error)
+	GetOrders() (*GetOrdersResponse, error)
 	GetOrderItems() (*GetOrderItemsResponse, error)
 	SetStatusToReadyToShip(*SetStatusToReadyToShipRequest) (*GetShopInfoResponse, error)
 }
@@ -354,16 +354,14 @@ func (lc *LazadaClient) GetProducts() (resp *GetProductsResponse, err error) {
 //=======================================================
 
 // GetOrders get
-func (lc *LazadaClient) GetOrders(req *GetOrdersRequest) (resp *GetOrdersResponse, err error) {
-	b, _ := json.Marshal(req)
-	params := make(map[string]string)
-	json.Unmarshal(b, &params)
-	bytes, err := lc.Execute("GetOrders", "GET", params)
+func (lc *LazadaClient) GetOrders() (resp *GetOrdersResponse, err error) {
+
+	b, err := lc.Execute("GetOrders", "GET", nil)
 
 	if err != nil {
 		return
 	}
-	err = json.Unmarshal(bytes.Data, &resp)
+	err = json.Unmarshal(b.Data, &resp)
 
 	if err != nil {
 		return
