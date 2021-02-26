@@ -248,7 +248,7 @@ func (lc *LazadaClient) Execute(apiName string, apiMethod string, bodyParams int
 	apiServerURL := lc.getServerURL()
 
 	values.Add("sign", lc.sign(apiPath))
-	fullURL := fmt.Sprintf("%s%s?%s", apiServerURL, apiPath, values.Encode())
+	fullURL := fmt.Sprintf("%s/%s?%s", apiServerURL, apiPath, values.Encode())
 	req, err = http.NewRequest(apiMethod, fullURL, body)
 
 	if err != nil {
