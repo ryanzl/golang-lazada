@@ -278,6 +278,13 @@ func (lc *LazadaClient) Execute(apiName string, apiMethod string, bodyParams int
 
 // Client interface api
 type Client interface {
+	MakeAuthURL() string
+
+	SetCallbackUrl(url string)
+
+	SetAccessToken(accessToken string) *LazadaClient
+
+	ChangeRegion(region string) *LazadaClient
 
 	//=======================================================
 	// Shop
