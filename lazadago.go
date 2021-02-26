@@ -12,8 +12,11 @@ import (
 	"net/http"
 	"net/url"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
+	neturl "net/url"
+
 )
 
 const (
@@ -32,6 +35,8 @@ const (
 	APIGatewayPH = "https://api.lazada.com.ph/rest"
 	// APIGatewayID endpoint
 	APIGatewayID = "https://api.lazada.co.id/rest"
+
+	AuthURL  	 =  "https://auth.lazada.com/oauth/authorize"
 )
 
 // ClientOptions params
@@ -46,12 +51,14 @@ type LazadaClient struct {
 	APIKey    string
 	APISecret string
 	Region    string
+	CallbackURL string
 
 	Method     string
 	SysParams  map[string]string
 	APIParams  map[string]string
 	FileParams map[string][]byte
 }
+
 
 // NewClient init
 func NewClient(opts *ClientOptions) Client {
@@ -78,6 +85,21 @@ func (lc *LazadaClient) Debug(enableDebug bool) *LazadaClient {
 		lc.SysParams["debug"] = "false"
 	}
 	return lc
+}
+// 生成授权链接
+func (me *LazadaClient) MakeAuthURL() string {
+	params := neturl.Values{}
+	params.Add("response_type", "code")
+	params.Add("force_auth", "true")
+	params.Add("country", me.Region)
+	params.Add("redirect_uri", me.CallbackURL)
+	params.Add("client_id", me.APIKey)
+	return AuthURL + `?` + params.Encode()
+}
+
+// 设置回调地址
+func (me *LazadaClient) SetCallbackUrl(url string) {
+	me.CallbackURL = url
 }
 
 // SetAccessToken setter
@@ -207,7 +229,7 @@ func (lc *LazadaClient) Execute(apiName string, apiMethod string, bodyParams int
 		}
 
 		for key, val := range bodyData {
-			_ = writer.WriteField(key, val)
+			_ = writer.WriteField(strconv.Itoa(key), string(val))
 		}
 
 		if err = writer.Close(); err != nil {
@@ -256,6 +278,7 @@ func (lc *LazadaClient) Execute(apiName string, apiMethod string, bodyParams int
 
 // Client interface api
 type Client interface {
+
 	//=======================================================
 	// Shop
 	//=======================================================
@@ -280,12 +303,13 @@ type Client interface {
 	SetStatusToReadyToShip(*SetStatusToReadyToShipRequest) (*GetShopInfoResponse, error)
 }
 
+
 //=======================================================
 // Shop
 //=======================================================
 
 // GetSeller Use this call to get information of shop
-func (lc *LazadaClient) GetSeller() (resp *GetShopInfoResponse, err error) {
+func (lc *LazadaClient) GetShopInfo() (resp *GetShopInfoResponse, err error) {
 	b, err := lc.Execute("GetShopInfo", "GET", nil)
 
 	if err != nil {
@@ -305,7 +329,7 @@ func (lc *LazadaClient) GetSeller() (resp *GetShopInfoResponse, err error) {
 
 // GetProducts get
 func (lc *LazadaClient) GetProducts() (resp *GetProductsResponse, err error) {
-	b, err := lc.Execute("GetShopInfo", "GET", nil)
+	b, err := lc.Execute("GetProducts", "GET", nil)
 
 	if err != nil {
 		return
@@ -324,7 +348,7 @@ func (lc *LazadaClient) GetProducts() (resp *GetProductsResponse, err error) {
 
 // GetOrders get
 func (lc *LazadaClient) GetOrders() (resp *GetOrdersResponse, err error) {
-	b, err := lc.Execute("GetShopInfo", "GET", nil)
+	b, err := lc.Execute("GetOrders", "GET", nil)
 
 	if err != nil {
 		return
@@ -339,7 +363,7 @@ func (lc *LazadaClient) GetOrders() (resp *GetOrdersResponse, err error) {
 
 // GetOrderItems get
 func (lc *LazadaClient) GetOrderItems() (resp *GetOrderItemsResponse, err error) {
-	b, err := lc.Execute("GetShopInfo", "GET", nil)
+	b, err := lc.Execute("GetOrderItems", "GET", nil)
 
 	if err != nil {
 		return
